@@ -104,8 +104,9 @@ void Click::start_request()
         }
 
         while (!id_file.atEnd()) {
-            QString idfa = id_file.readLine();
+            QString idfa = id_file.readLine().trimmed();
             foreach(QString offer, offers) {
+                qDebug() << "idfa:" << idfa;
                 QString url = offer + "&idfa=" + idfa;
                 ClickRunnable* click = new ClickRunnable(this);
                 click->setUrl(url);
