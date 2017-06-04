@@ -27,7 +27,7 @@ Click::Click(QObject *parent) : QObject(parent),
         offers << "http://svr.dotinapp.com/ics?sid=1217&adid=4006512";
     } else {
         while (!offer_file.atEnd()) {
-            QString f = offer_file.readLine();
+            QString f = offer_file.readLine().trimmed();
             offers << f;
         }
     }
@@ -40,7 +40,7 @@ Click::Click(QObject *parent) : QObject(parent),
         uas << "Mozilla/5.0 (iPhone; CPU iPhone OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Mobile/11A465 Twitter for iPhone";
     } else {
         while (!ua_file.atEnd()) {
-            QString f = ua_file.readLine();
+            QString f = ua_file.readLine().trimmed();
             uas << f;
         }
     }
@@ -50,7 +50,7 @@ Click::Click(QObject *parent) : QObject(parent),
     if (file.exists()) {
         if (file.open(QIODevice::ReadOnly)) {
             while (!file.atEnd()) {
-                already_click_file << file.readLine();
+                already_click_file << file.readLine().trimmed();
             }
         }
     }
@@ -106,7 +106,6 @@ void Click::start_request()
         while (!id_file.atEnd()) {
             QString idfa = id_file.readLine().trimmed();
             foreach(QString offer, offers) {
-                qDebug() << "idfa:" << idfa;
                 QString url = offer + "&idfa=" + idfa;
                 ClickRunnable* click = new ClickRunnable(this);
                 click->setUrl(url);
