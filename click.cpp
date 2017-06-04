@@ -87,13 +87,13 @@ void Click::start_request()
 
     qDebug() << "start request";
 
-    qDebug() << "dir: " << QCoreApplication::applicationDirPath();
+    // qDebug() << "dir: " << QCoreApplication::applicationDirPath();
     QDir dir(QCoreApplication::applicationDirPath() + "/ioslogs/");
     QStringList files_type;
     files_type << "*.id";
     QFileInfoList file_list = dir.entryInfoList(files_type, QDir::Files);
     foreach (QFileInfo fi, file_list) {
-        qDebug() << fi.absoluteFilePath();
+        // qDebug() << fi.absoluteFilePath();
         if (already_click_file.contains(fi.absoluteFilePath())) {
             continue;
         }

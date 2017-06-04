@@ -52,7 +52,7 @@ HttpHandle::HttpHandle()
 
 void HttpHandle::request(QUrl url)
 {
-    qDebug() << "request: " << url;
+    // qDebug() << "request: " << url;
     QEventLoop eventLoop;
 
     QTimer timer;
@@ -60,7 +60,7 @@ void HttpHandle::request(QUrl url)
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
     QNetworkAccessManager m_qnam;
-    m_proxy.setType(QNetworkProxy::HttpProxy);
+    m_proxy.setType(QNetworkProxy::DefaultProxy);
     m_qnam.setProxy(m_proxy);
     QNetworkRequest qnr(url);
     qnr.setHeader(QNetworkRequest::UserAgentHeader, m_ua);
@@ -69,6 +69,7 @@ void HttpHandle::request(QUrl url)
     eventLoop.exec();
 
     if (reply->error() != QNetworkReply::NoError) {
+        // qDebug() << "err url:" << reply->url();
         qDebug() << "error:" << reply->error() << "reply error: " << reply->errorString();
         reply->close();
         reply->deleteLater();
