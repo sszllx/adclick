@@ -60,7 +60,7 @@ void HttpHandle::request(QUrl url)
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
     QNetworkAccessManager m_qnam;
-    m_proxy.setType(QNetworkProxy::DefaultProxy);
+    m_proxy.setType(QNetworkProxy::HttpProxy);
     m_qnam.setProxy(m_proxy);
     QNetworkRequest qnr(url);
     qnr.setHeader(QNetworkRequest::UserAgentHeader, m_ua);
