@@ -25,7 +25,7 @@ signals:
     void exit();
 
 public slots:
-    void request(QUrl url, QNetworkAccessManager* mgr = NULL);
+    void request(QUrl url/*, QNetworkAccessManager* mgr = NULL*/);
 
 private:
     QNetworkProxy m_proxy;

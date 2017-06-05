@@ -10,7 +10,7 @@
 #include <QTime>
 #include <QTimer>
 
-#define MAX_THREAD_NUM 150
+#define MAX_THREAD_NUM 200
 
 // QThread::idealThreadCount()
 Click::Click(QObject *parent) : QObject(parent),
@@ -74,7 +74,7 @@ QString Click::get_proxy()
 QString Click::get_ua()
 {
     QTime time = QTime::currentTime();
-    srand(time.msec() + time.second() * 1000);
+    qsrand(time.msec() + time.second() * 1000);
     int rand = qrand();
     return uas.at(rand % uas.size());
 }
