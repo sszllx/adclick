@@ -10,12 +10,14 @@
 #include <QTime>
 #include <QTimer>
 
+#define MAX_THREAD_NUM 200
+
 // QThread::idealThreadCount()
 Click::Click(QObject *parent) : QObject(parent),
     m_thread_pool(QThreadPool::globalInstance()),
     m_network_mgr(new QNetworkAccessManager(this)),
     total_click(0),
-    pool_size(100)
+    pool_size(MAX_THREAD_NUM)
 {
     qDebug() << "thread ideal count:" << pool_size;
     m_thread_pool->setMaxThreadCount(pool_size);
@@ -64,7 +66,7 @@ Click::Click(QObject *parent) : QObject(parent),
 QString Click::get_proxy()
 {
     QTime time = QTime::currentTime();
-    srand(time.msec() + time.second() * 1000);
+    qsrand(time.msec() + time.second() * 1000);
     int rand = qrand();
     return m_proxy_list.at(rand % m_proxy_list.size());
 }
@@ -92,6 +94,9 @@ void Click::start_request()
     QStringList files_type;
     files_type << "*.id";
     QFileInfoList file_list = dir.entryInfoList(files_type, QDir::Files);
+    if (file_list.size() == 0) {
+        qDebug() << "no id files";
+    }
     foreach (QFileInfo fi, file_list) {
         // qDebug() << fi.absoluteFilePath();
         if (already_click_file.contains(fi.absoluteFilePath())) {
@@ -117,6 +122,7 @@ void Click::start_request()
 
                 total_click++;
                 qDebug() << "total click: " << total_click;
+                QThread::msleep(5);
                 m_thread_pool->start(click);
             }
         }

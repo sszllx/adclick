@@ -50,7 +50,7 @@ HttpHandle::HttpHandle()
 
 }
 
-void HttpHandle::request(QUrl url)
+void HttpHandle::request(QUrl url, QNetworkAccessManager* mgr)
 {
     // qDebug() << "request: " << url;
     QEventLoop eventLoop;
@@ -59,12 +59,16 @@ void HttpHandle::request(QUrl url)
     timer.setInterval(10000);
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
-    QNetworkAccessManager m_qnam;
+    if (mgr == NULL) {
+        mgr = new QNetworkAccessManager;
+    }
+//    QNetworkAccessManager mgr;
     m_proxy.setType(QNetworkProxy::HttpProxy);
-    m_qnam.setProxy(m_proxy);
+    mgr->setProxy(m_proxy);
     QNetworkRequest qnr(url);
     qnr.setHeader(QNetworkRequest::UserAgentHeader, m_ua);
-    QNetworkReply* reply = m_qnam.get(qnr);
+//    qDebug() << "proxy: " << m_proxy;
+    QNetworkReply* reply = mgr->get(qnr);
     QObject::connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
     eventLoop.exec();
 
@@ -73,6 +77,7 @@ void HttpHandle::request(QUrl url)
         qDebug() << "error:" << reply->error() << "reply error: " << reply->errorString();
         reply->close();
         reply->deleteLater();
+        mgr->deleteLater();
         return;
     }
 
@@ -87,6 +92,6 @@ void HttpHandle::request(QUrl url)
         QVariant possibleRedirectUrl =
                 reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
         // qDebug() << possibleRedirectUrl.toString();
-        request(QUrl(possibleRedirectUrl.toString()));
+        request(QUrl(possibleRedirectUrl.toString()), mgr);
     }
 }

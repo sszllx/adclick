@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QRunnable>
 #include <QSharedPointer>
+#include <QtCore>
 
 class QThreadPool;
 class QNetworkAccessManager;
