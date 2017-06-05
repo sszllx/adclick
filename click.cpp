@@ -140,8 +140,7 @@ void Click::proxy_reply(QNetworkReply *reply)
     QString data = reply->readAll();
     // qDebug() << data;
     if (data.size() == 0) {
-        // 10 sec
-        QTimer::singleShot(1000*10, this, SLOT(get_proxy_list()));
+        QTimer::singleShot(1000*5, this, SLOT(get_proxy_list()));
         return;
     }
 
@@ -152,6 +151,5 @@ void Click::proxy_reply(QNetworkReply *reply)
         m_proxy_list << p;
     }
 
-    // 10 sec
-    QTimer::singleShot(1000*10, this, SLOT(get_proxy_list()));
+    QTimer::singleShot(1000*5, this, SLOT(get_proxy_list()));
 }
