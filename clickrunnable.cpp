@@ -64,6 +64,8 @@ void HttpHandle::request(QUrl url/*, QNetworkAccessManager* mgr*/)
 //    }
     QNetworkAccessManager mgr;
     m_proxy.setType(QNetworkProxy::HttpProxy);
+//    m_proxy.setUser("lij80");
+//    m_proxy.setPassword("noh67wef");
     mgr.setProxy(m_proxy);
     QNetworkRequest qnr(url);
     qnr.setHeader(QNetworkRequest::UserAgentHeader, m_ua);

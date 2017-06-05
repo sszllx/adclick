@@ -131,7 +131,7 @@ void Click::start_request()
 
 void Click::get_proxy_list()
 {
-    QUrl url("http://dev.kuaidaili.com/api/getproxy/?orderid=919618932650660&num=100&area=%E4%B8%AD%E5%9B%BD&b_pcchrome=1&b_pcie=1&b_pcff=1&protocol=1&method=1&an_an=1&an_ha=1&quality=1&sep=4");
+    QUrl url("http://dps.kuaidaili.com/api/getdps/?orderid=929666638416410&num=100&sep=4");
     m_network_mgr->get(QNetworkRequest(url));
 }
 
