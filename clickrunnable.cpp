@@ -77,7 +77,7 @@ void HttpHandle::request(QUrl url, QNetworkAccessManager* mgr)
         qDebug() << "error:" << reply->error() << "reply error: " << reply->errorString();
         reply->close();
         reply->deleteLater();
-        mgr->deleteLater();
+        delete mgr;
         return;
     }
 

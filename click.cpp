@@ -10,7 +10,7 @@
 #include <QTime>
 #include <QTimer>
 
-#define MAX_THREAD_NUM 200
+#define MAX_THREAD_NUM 150
 
 // QThread::idealThreadCount()
 Click::Click(QObject *parent) : QObject(parent),
@@ -122,7 +122,7 @@ void Click::start_request()
 
                 total_click++;
                 qDebug() << "total click: " << total_click;
-                QThread::msleep(5);
+                QThread::msleep(2);
                 m_thread_pool->start(click);
             }
         }
