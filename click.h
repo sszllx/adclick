@@ -11,6 +11,19 @@ class QThreadPool;
 class QNetworkAccessManager;
 class QNetworkReply;
 
+class Click;
+
+class RequestThread : public QThread
+{
+public:
+    RequestThread(Click* click);
+
+    void run();
+
+private:
+    Click* m_click;
+};
+
 class Click : public QObject
 {
     Q_OBJECT
@@ -36,6 +49,8 @@ private:
     QStringList already_click_file;
     qint64 total_click;
     int pool_size;
+
+    RequestThread* rt;
 };
 
 #endif // CLICK_H

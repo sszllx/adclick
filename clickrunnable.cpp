@@ -56,22 +56,20 @@ void HttpHandle::request(QUrl url/*, QNetworkAccessManager* mgr*/)
     QEventLoop eventLoop;
 
     QTimer timer;
-    timer.setInterval(10000);
+    timer.setInterval(500);
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
-//    if (mgr == NULL) {
-//        mgr = new QNetworkAccessManager;
-//    }
     QNetworkAccessManager mgr;
     m_proxy.setType(QNetworkProxy::HttpProxy);
-//    m_proxy.setUser("lij80");
-//    m_proxy.setPassword("noh67wef");
+    m_proxy.setUser("lij80");
+    m_proxy.setPassword("noh67wef");
     mgr.setProxy(m_proxy);
     QNetworkRequest qnr(url);
     qnr.setHeader(QNetworkRequest::UserAgentHeader, m_ua);
 //    qDebug() << "proxy: " << m_proxy;
     QNetworkReply* reply = mgr.get(qnr);
     QObject::connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
+    timer.start();
     eventLoop.exec();
 
     if (reply->error() != QNetworkReply::NoError) {
