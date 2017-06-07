@@ -10,19 +10,47 @@
 #include <QTime>
 #include <QTimer>
 
-#define MAX_THREAD_NUM 200
+#define MAX_THREAD_NUM 100
 
-RequestThread::RequestThread(Click *click) : m_click(click) {}
+ProxyThread::ProxyThread(Click *click) : m_click(click) {}
 
-void RequestThread::run()
+void ProxyThread::run()
 {
-    m_click->start_request();
+    qDebug() << "Request threadid: " << QThread::currentThreadId();
+
+    QUrl url("http://dps.kuaidaili.com/api/getdps/?orderid=929666638416410&num=100&sep=4");
+    m_network_mgr = new QNetworkAccessManager;
+
+    while (1) {
+        QEventLoop eventLoop;
+        QNetworkReply* reply = m_network_mgr->get(QNetworkRequest(url));
+        QObject::connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
+        eventLoop.exec();
+
+        QString data = reply->readAll();
+        qDebug() << data;
+        if (data.size() == 0 ||
+                data.contains("error", Qt::CaseInsensitive)) {
+            QTimer::singleShot(1000*2, this, SLOT(get_proxy_list()));
+            return;
+        }
+
+        QStringList tmplist;
+        QStringList proxies = data.split("|");
+        foreach(QString p, proxies) {
+            tmplist << p;
+        }
+
+        m_click->set_proxy_list(tmplist);
+
+        QThread::sleep(5);
+    }
 }
 
 // QThread::idealThreadCount()
 Click::Click(QObject *parent) : QObject(parent),
     m_thread_pool(QThreadPool::globalInstance()),
-    m_network_mgr(new QNetworkAccessManager(this)),
+//    m_network_mgr(new QNetworkAccessManager(this)),
     total_click(0),
     pool_size(MAX_THREAD_NUM)
 {
@@ -65,12 +93,12 @@ Click::Click(QObject *parent) : QObject(parent),
     }
 #endif
 
-    connect(m_network_mgr, SIGNAL(finished(QNetworkReply*)),
-            this, SLOT(proxy_reply(QNetworkReply*)));
-    get_proxy_list();
+//    connect(m_network_mgr, SIGNAL(finished(QNetworkReply*)),
+//            this, SLOT(proxy_reply(QNetworkReply*)));
+//    get_proxy_list();
 
-    rt = new RequestThread(this);
-    rt->start();
+    pt = new ProxyThread(this);
+    pt->start();
 }
 
 QString Click::get_proxy()
@@ -91,8 +119,10 @@ QString Click::get_ua()
 
 void Click::start_request()
 {
+    qDebug() << "in start_request thread id:" << QThread::currentThreadId();
     if (m_proxy_list.size() == 0) {
         // retry
+        qDebug() << "jjjjjjjjjjjjjjjjjjjj";
         QTimer::singleShot(1000, this, SLOT(start_request()));
         return;
     }
@@ -132,13 +162,20 @@ void Click::start_request()
 
                 total_click++;
                 qDebug() << "total click: " << total_click;
-                QThread::msleep(2);
+                QThread::msleep(10);
                 m_thread_pool->start(click);
             }
         }
     }
 }
 
+void Click::set_proxy_list(QStringList pl)
+{
+    m_proxy_list.clear();
+    m_proxy_list = pl;
+}
+
+#if 0
 void Click::get_proxy_list()
 {
     qDebug() << "get proxy list";
@@ -148,6 +185,7 @@ void Click::get_proxy_list()
 
 void Click::proxy_reply(QNetworkReply *reply)
 {
+    qDebug() << "main thread id:" << QThread::currentThreadId();
     QString data = reply->readAll();
     qDebug() << data;
     if (data.size() == 0 ||
@@ -167,3 +205,4 @@ void Click::proxy_reply(QNetworkReply *reply)
 
     QTimer::singleShot(1000*5, this, SLOT(get_proxy_list()));
 }
+#endif

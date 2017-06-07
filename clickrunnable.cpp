@@ -56,7 +56,7 @@ void HttpHandle::request(QUrl url/*, QNetworkAccessManager* mgr*/)
     QEventLoop eventLoop;
 
     QTimer timer;
-    timer.setInterval(500);
+    timer.setInterval(10000);
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
     QNetworkAccessManager mgr;

@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     Click click;
-    // click.start_request();
+    click.start_request();
 
     return a.exec();
 }

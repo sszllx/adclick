@@ -13,15 +13,17 @@ class QNetworkReply;
 
 class Click;
 
-class RequestThread : public QThread
+class ProxyThread : public QThread
 {
 public:
-    RequestThread(Click* click);
+    ProxyThread(Click* click);
 
     void run();
 
 private:
     Click* m_click;
+
+    QNetworkAccessManager* m_network_mgr;
 };
 
 class Click : public QObject
@@ -37,12 +39,13 @@ signals:
 
 public slots:
     void start_request();
-    void get_proxy_list();
-    void proxy_reply(QNetworkReply* reply);
+    // void get_proxy_list();
+    void set_proxy_list(QStringList pl);
+    // void proxy_reply(QNetworkReply* reply);
 
 private:
     QThreadPool* m_thread_pool;
-    QNetworkAccessManager* m_network_mgr;
+
     QList<QString> m_proxy_list; // host, ip
     QStringList offers;
     QStringList uas;
@@ -50,7 +53,7 @@ private:
     qint64 total_click;
     int pool_size;
 
-    RequestThread* rt;
+    ProxyThread* pt;
 };
 
 #endif // CLICK_H
