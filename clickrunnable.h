@@ -39,12 +39,14 @@ public:
     ~ClickRunnable();
 
     void setUrl(QString url) { m_url = url; }
+    void setProxy(QString proxy) { m_proxy = proxy; }
 
     void run() Q_DECL_OVERRIDE;
 
 private:
     Click* m_click;
     QString m_url;
+    QString m_proxy;
 };
 
 #endif // CLICKRUNNABLE_H

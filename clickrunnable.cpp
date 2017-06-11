@@ -26,18 +26,26 @@ void ClickRunnable::run()
 {
     HttpHandle http;
 
-    QString p_str = m_click->get_proxy();
-    if (p_str.isEmpty()) {
-        return;
-    }
+//    QString p_str = m_click->getProxy();
+//    if (p_str.isEmpty()) {
+//        return;
+//    }
 
     QString ua = m_click->get_ua();
 
 //    qDebug() << "proxy: " << p_str;
 //    qDebug() << "request url: " << m_url;
 //    qDebug() << "\n\n";
+
     QNetworkProxy proxy;
-    QStringList tmp_p = p_str.split(":");
+    if (m_proxy.size() == 0) {
+        return;
+    }
+    QStringList tmp_p = m_proxy.split(":");
+//    qDebug() << "--------------" << tmp_p;
+    if (tmp_p.size() != 2) {
+        return;
+    }
     proxy.setHostName(tmp_p[0]);
     proxy.setPort(tmp_p[1].toInt());
     http.setProxy(proxy);
@@ -52,7 +60,7 @@ HttpHandle::HttpHandle()
 
 void HttpHandle::request(QUrl url/*, QNetworkAccessManager* mgr*/)
 {
-    // qDebug() << "request: " << url;
+    qDebug() << "request: " << url;
     QEventLoop eventLoop;
 
     QTimer timer;
@@ -61,12 +69,12 @@ void HttpHandle::request(QUrl url/*, QNetworkAccessManager* mgr*/)
     connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
     QNetworkAccessManager mgr;
     m_proxy.setType(QNetworkProxy::HttpProxy);
-    m_proxy.setUser("lij80");
-    m_proxy.setPassword("noh67wef");
+//    m_proxy.setUser("lij80");
+//    m_proxy.setPassword("noh67wef");
     mgr.setProxy(m_proxy);
     QNetworkRequest qnr(url);
     qnr.setHeader(QNetworkRequest::UserAgentHeader, m_ua);
-//    qDebug() << "proxy: " << m_proxy;
+    qDebug() << "proxy: " << m_proxy;
     QNetworkReply* reply = mgr.get(qnr);
     QObject::connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
     timer.start();
@@ -82,11 +90,12 @@ void HttpHandle::request(QUrl url/*, QNetworkAccessManager* mgr*/)
     }
 
     int http_status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    // qDebug() << "http:" << http_status;
+    qDebug() << "http:" << http_status;
 
     reply->close();
     reply->deleteLater();
 
+#if 0
     if (http_status == 302 ||
             http_status == 301) {
         QVariant possibleRedirectUrl =
@@ -94,4 +103,5 @@ void HttpHandle::request(QUrl url/*, QNetworkAccessManager* mgr*/)
         // qDebug() << possibleRedirectUrl.toString();
         request(QUrl(possibleRedirectUrl.toString())/*, mgr*/);
     }
+#endif
 }

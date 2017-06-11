@@ -10,7 +10,7 @@
 #include <QTime>
 #include <QTimer>
 
-#define MAX_THREAD_NUM 100
+#define MAX_THREAD_NUM 200
 
 ProxyThread::ProxyThread(Click *click) : m_click(click) {}
 
@@ -18,7 +18,7 @@ void ProxyThread::run()
 {
     qDebug() << "Request threadid: " << QThread::currentThreadId();
 
-    QUrl url("http://dps.kuaidaili.com/api/getdps/?orderid=929666638416410&num=100&sep=4");
+    QUrl url("http://www.httpsdaili.com/api.asp?key=20170610114439653&getnum=10&anonymoustype=3&area=1&splits=%7C");
     m_network_mgr = new QNetworkAccessManager;
 
     while (1) {
@@ -53,6 +53,7 @@ Click::Click(QObject *parent) : QObject(parent),
 //    m_network_mgr(new QNetworkAccessManager(this)),
     total_click(0),
     pool_size(MAX_THREAD_NUM)
+//    bf(new BloomFilter)
 {
     qDebug() << "thread ideal count:" << pool_size;
     m_thread_pool->setMaxThreadCount(pool_size);
@@ -65,6 +66,7 @@ Click::Click(QObject *parent) : QObject(parent),
     } else {
         while (!offer_file.atEnd()) {
             QString f = offer_file.readLine().trimmed();
+            qDebug() << "==========" << f;
             offers << f;
         }
     }
@@ -97,16 +99,65 @@ Click::Click(QObject *parent) : QObject(parent),
 //            this, SLOT(proxy_reply(QNetworkReply*)));
 //    get_proxy_list();
 
-    pt = new ProxyThread(this);
-    pt->start();
+//    pt = new ProxyThread(this);
+//    pt->start();
 }
 
-QString Click::get_proxy()
+QString Click::proxyRequest()
 {
+    qDebug() << "proxyRequest";
+    QEventLoop eventLoop;
+    // QUrl url("http://dps.kuaidaili.com/api/getdps/?orderid=929666638416410&num=50&sep=4");
+    QUrl url("http://www.xdaili.cn/ipagent/privateProxy/applyStaticProxy?count=1&spiderId=eae82458fb354e628f25f5ee7b874291&returnType=1");
+    // QUrl url("http://www.httpsdaili.com/api.asp?key=20170610114439653&getnum=1000&area=1&splits=%7C&proxytype=1");
+    QNetworkAccessManager mgr;
+    QNetworkRequest qnr(url);
+    QNetworkReply* reply = mgr.get(qnr);
+    QObject::connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
+    eventLoop.exec();
+    if (reply->error() != QNetworkReply::NoError) {
+        qDebug() << "error:" << reply->error() << "reply error: " << reply->errorString();
+        reply->close();
+        reply->deleteLater();
+        return QString("");
+    }
+
+    QString data = reply->readAll().trimmed();
+    return data;
+}
+
+QString Click::getProxy()
+{
+#if 0
     QTime time = QTime::currentTime();
     qsrand(time.msec() + time.second() * 1000);
     int rand = qrand();
     return m_proxy_list.at(rand % m_proxy_list.size());
+#endif
+
+    if (m_proxy_list.size() == 0) {
+        QString data = proxyRequest();
+        while (data.contains("ERROR") ||
+               data.size() < 100) {
+            qDebug() << "get proxy error!";
+            return "";
+        }
+
+        QStringList proxies = data.split("\n");
+        if (proxies.size() == 1 ||
+                proxies.size() == 0) {
+            return "";
+        }
+
+        foreach(QString p, proxies) {
+            m_proxy_list << p;
+        }
+    }
+
+    if (m_proxy_list.size() == 0) {
+        return "";
+    }
+    return m_proxy_list.takeFirst();
 }
 
 QString Click::get_ua()
@@ -120,12 +171,13 @@ QString Click::get_ua()
 void Click::start_request()
 {
     qDebug() << "in start_request thread id:" << QThread::currentThreadId();
+#if 0
     if (m_proxy_list.size() == 0) {
         // retry
-        qDebug() << "jjjjjjjjjjjjjjjjjjjj";
         QTimer::singleShot(1000, this, SLOT(start_request()));
         return;
     }
+#endif
 
     qDebug() << "start request";
 
@@ -150,8 +202,20 @@ void Click::start_request()
 
         while (!id_file.atEnd()) {
             QString idfa = id_file.readLine().trimmed();
+            QString proxy = getProxy();
+            while (proxy.size() == 0 ||
+                   used_ip_list.contains(proxy)) {
+                qDebug() << "duplicate " << used_ip_list.size()
+                         << "proxy size: " << proxy.size();
+                QThread::sleep(1);
+                proxy = getProxy();
+            }
+
+            used_ip_list << proxy;
+
             foreach(QString offer, offers) {
-                QString url = offer + "&idfa=" + idfa;
+                // QString url = offer + "&idfa=" + idfa;
+                QString url("http://www.baidu.com");
                 ClickRunnable* click = new ClickRunnable(this);
                 click->setUrl(url);
                 click->setAutoDelete(true);
@@ -159,6 +223,8 @@ void Click::start_request()
                 while (m_thread_pool->activeThreadCount() == pool_size) {
                     QThread::sleep(1);
                 }
+
+                click->setProxy(proxy);
 
                 total_click++;
                 qDebug() << "total click: " << total_click;

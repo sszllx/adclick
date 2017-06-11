@@ -7,6 +7,8 @@
 #include <QSharedPointer>
 #include <QtCore>
 
+#include "bloomfilter/BloomFilter.h"
+
 class QThreadPool;
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -32,7 +34,7 @@ class Click : public QObject
 public:
     explicit Click(QObject *parent = nullptr);
 
-    QString get_proxy();
+    QString getProxy();
     QString get_ua();
 
 signals:
@@ -44,16 +46,19 @@ public slots:
     // void proxy_reply(QNetworkReply* reply);
 
 private:
+    QString proxyRequest();
     QThreadPool* m_thread_pool;
 
     QList<QString> m_proxy_list; // host, ip
     QStringList offers;
     QStringList uas;
     QStringList already_click_file;
+    QStringList used_ip_list;
     qint64 total_click;
     int pool_size;
 
     ProxyThread* pt;
+    BloomFilter* bf;
 };
 
 #endif // CLICK_H
